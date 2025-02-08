@@ -64,22 +64,40 @@ foreach ($purge_hooks as $hook) {
     add_action($hook, 'purge_nginx_cache');
 }
 
-// Add admin menu item to purge cache manually
-function nginx_cache_purger_menu() {
-    add_menu_page(
-        'Purge NGINX Cache', 'Purge Cache', 'manage_options',
-        'purge-nginx-cache', 'manual_purge_nginx_cache', 'dashicons-update', 99
-    );
-}
-add_action('admin_menu', 'nginx_cache_purger_menu');
+/**
+ * Add Purge Cache button to WordPress admin bar.
+ *
+ * @param WP_Admin_Bar $wp_admin_bar WordPress Admin Bar object.
+ */
+function nginx_cache_purger_admin_bar($wp_admin_bar) {
+    if (!is_admin_bar_showing() || !current_user_can('manage_options')) {
+        return;
+    }
 
-// Function to handle manual purge
-function manual_purge_nginx_cache() {
+    $wp_admin_bar->add_node([
+        'id'    => 'purge-nginx-cache',
+        'title' => '🧹 Purge NGINX Cache',
+        'href'  => admin_url('admin-post.php?action=purge_nginx_cache'),
+        'meta'  => [
+            'title' => 'Click to purge the NGINX cache',
+        ],
+    ]);
+}
+add_action('admin_bar_menu', 'nginx_cache_purger_admin_bar', 100);
+
+/**
+ * Handle manual cache purge when admin bar button is clicked.
+ */
+function handle_manual_purge_nginx_cache() {
     purge_nginx_cache();
-    echo '<div class="updated"><p>NGINX Cache Purged Successfully.</p></div>';
+    wp_redirect($_SERVER['HTTP_REFERER'] ?? admin_url());
+    exit;
 }
+add_action('admin_post_purge_nginx_cache', 'handle_manual_purge_nginx_cache');
 
-// Display admin notice after purging cache
+/**
+ * Display admin notice after purging cache.
+ */
 function nginx_cache_purge_admin_notice() {
     echo '<div class="updated notice is-dismissible"><p>NGINX Cache Purged Successfully.</p></div>';
 }
