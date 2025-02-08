@@ -3,7 +3,7 @@
  * Plugin Name: NGINX Cache Helper
  * Plugin URI:  https://printdatasolutions.co.uk
  * Description: Automatically clears NGINX FastCGI/Proxy Cache when content is updated.
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      Cameron Stephen
  * Author URI:  https://printdatasolutions.co.uk
  * License:     GPL-2.0+
@@ -89,6 +89,11 @@ add_action('admin_bar_menu', 'nginx_cache_clear_admin_bar', 100);
  */
 function handle_manual_clear_nginx_cache() {
     clear_nginx_cache();
+
+    // Store an admin notice using transient (session-based message)
+    set_transient('nginx_cache_clear_notice', 'Cache Cleared Successfully.', 30);
+
+    // Redirect back to the referring page
     wp_redirect($_SERVER['HTTP_REFERER'] ?? admin_url());
     exit;
 }
@@ -98,5 +103,9 @@ add_action('admin_post_clear_nginx_cache', 'handle_manual_clear_nginx_cache');
  * Display admin notice after clearing cache.
  */
 function nginx_cache_clear_admin_notice() {
-    echo '<div class="updated notice is-dismissible"><p>Cache Cleared Successfully.</p></div>';
+    if ($message = get_transient('nginx_cache_clear_notice')) {
+        echo '<div class="updated notice is-dismissible"><p>' . esc_html($message) . '</p></div>';
+        delete_transient('nginx_cache_clear_notice');
+    }
 }
+add_action('admin_notices', 'nginx_cache_clear_admin_notice');
