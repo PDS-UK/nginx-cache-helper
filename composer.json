@@ -1,0 +1,21 @@
+{
+  "name": "pds-uk/nginx-cache-helper",
+  "description": "Updates the Nginx Helper plugin to purge FastCGI cache across all nginx pods. Only activates in a nginx environment.",
+  "type": "wordpress-muplugin",
+  "authors": [
+    {
+      "name": "Cameron Stephen",
+      "email": "web.support@printdatasolutions.co.uk",
+      "homepage": "https://printdatasolutions.co.uk"
+    }
+  ],
+  "require": {
+    "composer/installers": "^2.0"
+  },
+  "extra": {
+    "installer-name": "nginx-cache-helper",
+    "installer-paths": {
+      "wp-content/mu-plugins/{$name}/": ["type:wordpress-muplugin"]
+    }
+  }
+}
