@@ -3,7 +3,7 @@
  * Plugin Name: NGINX Cache Helper
  * Plugin URI:  https://printdatasolutions.co.uk
  * Description: Automatically clears NGINX FastCGI/Proxy Cache when content is updated.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Cameron Stephen
  * Author URI:  https://printdatasolutions.co.uk
  * License:     GPL-2.0+
@@ -39,65 +39,64 @@ function unlink_recursive($dir, $delete_root_too = false) {
 }
 
 /**
- * Purge NGINX cache.
+ * Clear NGINX cache.
  *
  * @return void
  */
-function purge_nginx_cache() {
+function clear_nginx_cache() {
     if (php_sapi_name() === 'cli') {
         return; // Prevent execution in CLI mode
     }
 
     unlink_recursive(NGINX_CACHE_PATH);
-    error_log("NGINX Cache purged successfully.");
-    add_action('admin_notices', 'nginx_cache_purge_admin_notice');
+    add_action('admin_notices', 'nginx_cache_clear_admin_notice');
 }
 
-// Hook into relevant WordPress events to purge cache
-$purge_hooks = [
+// Hook into relevant WordPress events to clear cache
+$clear_hooks = [
     'transition_post_status', 'wp_insert_comment', 'wp_set_comment_status', 'delete_comment',
     'activated_plugin', 'deactivated_plugin', 'after_switch_theme', 'upgrader_process_complete',
     'save_post_product', 'woocommerce_order_status_changed', 'delete_post', 'save_post',
     'publish_post', 'publish_page'
 ];
-foreach ($purge_hooks as $hook) {
-    add_action($hook, 'purge_nginx_cache');
+foreach ($clear_hooks as $hook) {
+    add_action($hook, 'clear_nginx_cache');
 }
 
 /**
- * Add Purge Cache button to WordPress admin bar.
+ * Add Clear Cache button to WordPress admin bar.
  *
  * @param WP_Admin_Bar $wp_admin_bar WordPress Admin Bar object.
  */
-function nginx_cache_purger_admin_bar($wp_admin_bar) {
+function nginx_cache_clear_admin_bar($wp_admin_bar) {
     if (!is_admin_bar_showing() || !current_user_can('manage_options')) {
         return;
     }
 
     $wp_admin_bar->add_node([
-        'id'    => 'purge-nginx-cache',
-        'title' => '🧹 Purge NGINX Cache',
-        'href'  => admin_url('admin-post.php?action=purge_nginx_cache'),
+        'id'    => 'clear-nginx-cache',
+        'title' => 'Clear Cache',
+        'href'  => admin_url('admin-post.php?action=clear_nginx_cache'),
         'meta'  => [
-            'title' => 'Click to purge the NGINX cache',
+            'title' => 'Click to clear the NGINX page cache',
         ],
     ]);
 }
-add_action('admin_bar_menu', 'nginx_cache_purger_admin_bar', 100);
+add_action('admin_bar_menu', 'nginx_cache_clear_admin_bar', 100);
 
 /**
- * Handle manual cache purge when admin bar button is clicked.
+ * Handle manual cache clear when admin bar button is clicked.
  */
-function handle_manual_purge_nginx_cache() {
-    purge_nginx_cache();
+function handle_manual_clear_nginx_cache() {
+    clear_nginx_cache();
     wp_redirect($_SERVER['HTTP_REFERER'] ?? admin_url());
     exit;
 }
-add_action('admin_post_purge_nginx_cache', 'handle_manual_purge_nginx_cache');
+add_action('admin_post_clear_nginx_cache', 'handle_manual_clear_nginx_cache');
 
 /**
- * Display admin notice after purging cache.
+ * Display admin notice after clearing cache.
  */
-function nginx_cache_purge_admin_notice() {
-    echo '<div class="updated notice is-dismissible"><p>NGINX Cache Purged Successfully.</p></div>';
+function nginx_cache_clear_admin_notice() {
+    echo '<div class="updated notice is-dismissible"><p>Cache Cleared Successfully.</p></div>';
 }
