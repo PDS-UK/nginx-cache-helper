@@ -48,7 +48,12 @@ function clear_nginx_cache() {
         return; // Prevent execution in CLI mode
     }
 
+    // Clear cache files
     unlink_recursive(NGINX_CACHE_PATH);
+
+    // Store last cache clear timestamp
+    update_option('nginx_cache_last_cleared', current_time('mysql'));
+    
     add_action('admin_notices', 'nginx_cache_clear_admin_notice');
 }
 
