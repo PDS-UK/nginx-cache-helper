@@ -39,13 +39,17 @@ function unlink_recursive($dir, $delete_root_too = false) {
 }
 
 /**
- * Clear NGINX cache.
+ * Purge the NGINX cache without adding an admin notice.
  *
- * @return void
+ * This is the public integration point for code paths that update content
+ * without triggering a normal WordPress post-save action, such as direct
+ * metadata updates from an API endpoint.
+ *
+ * @return bool True when the purge was attempted, false for CLI requests.
  */
-function clear_nginx_cache() {
+function nginx_cache_helper_purge_cache() {
     if (php_sapi_name() === 'cli') {
-        return; // Prevent execution in CLI mode
+        return false; // Prevent execution in CLI mode
     }
 
     // Clear cache files
@@ -53,7 +57,20 @@ function clear_nginx_cache() {
 
     // Store last cache clear timestamp
     update_option('nginx_cache_last_cleared', current_time('mysql'));
-    
+
+    return true;
+}
+
+/**
+ * Clear NGINX cache and show the admin notice on the next admin response.
+ *
+ * @return void
+ */
+function clear_nginx_cache() {
+    if (!nginx_cache_helper_purge_cache()) {
+        return;
+    }
+
     add_action('admin_notices', 'nginx_cache_clear_admin_notice');
 }
 

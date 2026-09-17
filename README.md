@@ -15,6 +15,18 @@ NGINX Cache Helper is a WordPress plugin that automatically clears the NGINX Fas
 - Manual cache purging via a WordPress admin menu item.
 - Lightweight and optimised for performance.
 
+### Programmatic purging
+
+Code that updates content without triggering a normal WordPress save action
+can purge the cache explicitly:
+
+```php
+nginx_cache_helper_purge_cache();
+```
+
+The function returns `true` when the purge was attempted and `false` for CLI
+requests.
+
 ## Installation
 ### Manual Installation
 ```sh
@@ -27,4 +39,3 @@ NGINX Cache Helper is a WordPress plugin that automatically clears the NGINX Fas
 ```sh
 composer require pds-uk/nginx-cache-helper
 ```
-
